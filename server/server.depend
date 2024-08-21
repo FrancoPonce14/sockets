@@ -9,3 +9,13 @@
 	<ctime>
 	<thread>
 
+1724263638 source:c:\users\nemesis\desktop\franco desarrollo\proyectos\sockets\server\main.cpp
+	<iostream>
+	<winsock2.h>
+	<math.h>
+	<iomanip>
+	<sstream>
+	<fstream>
+	<ctime>
+	<thread>
+

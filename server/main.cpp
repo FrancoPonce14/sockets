@@ -11,8 +11,9 @@ using namespace std;
 
 #define PUERTO 5000
 
-string vocales = "AEIOU";
-string consonantes = "BCDFGHJKLMNPQRSTVWXYZ";
+string vocales = "AEIOUaeiou";
+string consonantes = "BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz";
+string numeros = "0123456789";
 bool esperando = false;
 bool conexion = true;
 
@@ -104,15 +105,15 @@ string GenerarUsername(int longitud) {
                 int consonanteAleatoria = rand() % consonantes.length();
                 resultado += consonantes[consonanteAleatoria];
             } else {
-                int vocalesAleatoria = rand() % vocales.length();
-                resultado += vocales[vocalesAleatoria];
+                int vocalAleatoria = rand() % vocales.length();
+                resultado += vocales[vocalAleatoria];
             }
         }
     } else if (consonantes.find(letraInicial) != string::npos) {
         for (int i = 1; i < longitud; i++) {
             if (i % 2 == 1) {
-                int vocalesAleatoria = rand() % vocales.length();
-                resultado += vocales[vocalesAleatoria];
+                int vocalAleatoria = rand() % vocales.length();
+                resultado += vocales[vocalAleatoria];
             } else {
                 int consonanteAleatoria = rand() % consonantes.length();
                 resultado += consonantes[consonanteAleatoria];
@@ -124,7 +125,13 @@ string GenerarUsername(int longitud) {
 }
 
 string GenerarPassword(int longitud) {
-    return "generoPassword";
+    string alfanumericos = numeros + consonantes + vocales;
+    string resultado = "";
+    for(int i=0;i<longitud;i++){
+        int alfanumericoAleatorio = rand() % alfanumericos.length();
+        resultado += alfanumericos[alfanumericoAleatorio];
+    }
+    return resultado;
 }
 
 string ResponderCadena(string mensaje) {
