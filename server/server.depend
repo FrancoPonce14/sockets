@@ -1,0 +1,11 @@
+# depslib dependency file v1.0
+1724218313 source:c:\users\franc\onedrive\escritorio\franco\c proyects\server\main.cpp
+	<iostream>
+	<winsock2.h>
+	<math.h>
+	<iomanip>
+	<sstream>
+	<fstream>
+	<ctime>
+	<thread>
+

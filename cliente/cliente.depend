@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1724217435 source:c:\users\franc\onedrive\escritorio\franco\c proyects\cliente\main.cpp
+	<iostream>
+	<winsock2.h>
+	<thread>
+	<cstring>
+	<ws2tcpip.h>
+	<stdio.h>
+
