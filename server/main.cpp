@@ -11,6 +11,8 @@ using namespace std;
 
 #define PUERTO 5000
 
+string vocales = "AEIOU";
+string consonantes = "BCDFGHJKLMNPQRSTVWXYZ";
 bool esperando = false;
 bool conexion = true;
 
@@ -84,20 +86,55 @@ void TimeOut(Server* servidor) {
     }
 }
 
-string generarUsername() {
-    return "generoUsername";
+char LetraInicialAleatoria() {
+    string todo = vocales + consonantes;
+    srand(time(0));
+    int i = rand() % todo.length();
+    return todo[i];
 }
 
-string generarPassword() {
+string GenerarUsername(int longitud) {
+    string resultado = "";
+    char letraInicial = LetraInicialAleatoria();
+    resultado = letraInicial;
+
+    if (vocales.find(letraInicial) != string::npos) {
+        for (int i = 1; i < longitud; i++) {
+            if (i % 2 == 1) {
+                int consonanteAleatoria = rand() % consonantes.length();
+                resultado += consonantes[consonanteAleatoria];
+            } else {
+                int vocalesAleatoria = rand() % vocales.length();
+                resultado += vocales[vocalesAleatoria];
+            }
+        }
+    } else if (consonantes.find(letraInicial) != string::npos) {
+        for (int i = 1; i < longitud; i++) {
+            if (i % 2 == 1) {
+                int vocalesAleatoria = rand() % vocales.length();
+                resultado += vocales[vocalesAleatoria];
+            } else {
+                int consonanteAleatoria = rand() % consonantes.length();
+                resultado += consonantes[consonanteAleatoria];
+            }
+        }
+    }
+
+    return resultado;
+}
+
+string GenerarPassword(int longitud) {
     return "generoPassword";
 }
 
-string ResponderCalculo(string mensaje) {
+string ResponderCadena(string mensaje) {
     string resultado = "";
     if(mensaje.find("USERNAME:") == 0){
-        resultado = generarUsername();
+        int longitud = stoi(mensaje.substr(9));
+        resultado = GenerarUsername(longitud);
     } else if(mensaje.find("PASSWORD:") == 0) {
-        resultado = generarPassword();
+         int longitud = stoi(mensaje.substr(9));
+        resultado = GenerarPassword(longitud);
     } else {
         resultado = "Conexion cerrada";
         conexion = false;
@@ -126,7 +163,7 @@ int main() {
                 break;
             }
 
-            string respuesta = ResponderCalculo(mensaje);
+            string respuesta = ResponderCadena(mensaje);
 
             cout << ": Respuesta enviada: " << respuesta << endl;
 

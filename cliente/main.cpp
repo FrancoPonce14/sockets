@@ -3,6 +3,8 @@
 #include <thread>
 #include <cstring>
 #include <ws2tcpip.h>
+#include <cstdlib>
+#include <ctime>
 #include <stdio.h>
 
 using namespace std;
