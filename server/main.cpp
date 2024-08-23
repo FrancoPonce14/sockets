@@ -36,41 +36,39 @@ public:
         listen(server, 0);
 
         cout << "Escuchando para conexiones entrantes en el puerto: " << PUERTO << endl;
-
-        int clientAddrSize = sizeof(clientAddr);
-        if ((client = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize)) != INVALID_SOCKET) {
-            cout << "Cliente conectado!" << endl;
-        }
     }
 
-    void EsperarCliente() {
-        bind(server, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
-        listen(server, 0);
-
-        cout << "Escuchando para conexiones entrantes." << endl;
-
+    bool AceptarCliente() {
         int clientAddrSize = sizeof(clientAddr);
-        if ((client = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize)) != INVALID_SOCKET) {
+        client = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize);
+        if (client != INVALID_SOCKET) {
             cout << "Cliente conectado!" << endl;
+            return true;
         }
+        return false;
     }
 
     string Recibir() {
-        recv(client, buffer, sizeof(buffer), 0);
-        string mensaje(buffer);
-        memset(buffer, 0, sizeof(buffer));
-        return mensaje;
+        int bytesRecibidos = recv(client, buffer, sizeof(buffer), 0);
+        if (bytesRecibidos > 0) {
+            return string(buffer, bytesRecibidos);  // Solo usar la cantidad de bytes recibidos
+        }
+        return "";
     }
 
     void Enviar(string mensaje) {
-        strcpy(buffer, mensaje.c_str());
-        send(client, buffer, sizeof(buffer), 0);
-        memset(buffer, 0, sizeof(buffer));
+        send(client, mensaje.c_str(), mensaje.length(), 0);
     }
 
-    void CerrarSocket() {
+    void CerrarSocketCliente() {
         closesocket(client);
         cout << "Socket cerrado, cliente desconectado.\n" << endl;
+    }
+
+    void CerrarSocketServidor() {
+        closesocket(server);
+        WSACleanup();
+        cout << "Servidor cerrado.\n" << endl;
     }
 };
 
@@ -81,8 +79,9 @@ void TimeOut(Server* servidor) {
         tiempo++;
         if (tiempo >= 120) {
             cout << "\nTimeout, se va a cerrar la conexion con el cliente\n";
-            servidor->CerrarSocket();
+            servidor->CerrarSocketCliente();
             conexion = false;
+            break;
         }
     }
 }
@@ -127,7 +126,7 @@ string GenerarUsername(int longitud) {
 string GenerarPassword(int longitud) {
     string alfanumericos = numeros + consonantes + vocales;
     string resultado = "";
-    for(int i=0;i<longitud;i++){
+    for(int i = 0; i < longitud; i++){
         int alfanumericoAleatorio = rand() % alfanumericos.length();
         resultado += alfanumericos[alfanumericoAleatorio];
     }
@@ -140,7 +139,7 @@ string ResponderCadena(string mensaje) {
         int longitud = stoi(mensaje.substr(9));
         resultado = GenerarUsername(longitud);
     } else if(mensaje.find("PASSWORD:") == 0) {
-         int longitud = stoi(mensaje.substr(9));
+        int longitud = stoi(mensaje.substr(9));
         resultado = GenerarPassword(longitud);
     } else {
         resultado = "Conexion cerrada";
@@ -152,32 +151,44 @@ string ResponderCadena(string mensaje) {
 
 int main() {
     Server* Servidor = new Server();
-    string mensaje = " ";
 
     while (true) {
-        while (conexion) {
+        if (Servidor->AceptarCliente()) {
+            string mensaje = "";
 
-            cout << ": Esperando recibir mensaje" << endl;
+            while (conexion) {
+                cout << ": Esperando recibir mensaje" << endl;
 
-            thread timeOut(TimeOut, Servidor);
-            esperando = true;
-            mensaje = Servidor->Recibir();
-            esperando = false;
-            timeOut.join();
-            cout << ": Mensaje recibido: " << mensaje << endl;
+                thread timeOut(TimeOut, Servidor);
+                esperando = true;
+                mensaje = Servidor->Recibir();
+                esperando = false;
+                timeOut.join();
 
-            if (!conexion) {
-                break;
+                if (mensaje.empty()) {
+                    cout << "Error al recibir mensaje, cerrando la conexión." << endl;
+                    conexion = false;
+                    break;
+                }
+
+                cout << ": Mensaje recibido: " << mensaje << endl;
+
+                string respuesta = ResponderCadena(mensaje);
+
+                cout << ": Respuesta enviada: " << respuesta << endl;
+
+                Servidor->Enviar(respuesta);
+
+                if (!conexion) {
+                    Servidor->CerrarSocketCliente();
+                    break;
+                }
             }
-
-            string respuesta = ResponderCadena(mensaje);
-
-            cout << ": Respuesta enviada: " << respuesta << endl;
-
-            Servidor->Enviar(respuesta);
         }
-        conexion = true;
-        Servidor->EsperarCliente();
     }
-}
 
+    Servidor->CerrarSocketServidor();
+    delete Servidor;
+
+    return 0;
+}
