@@ -1,10 +1,9 @@
 import socket
 
-# Configuración del cliente
 puerto = 0
-buffer_size = 1024
+buffer = 1024
 
-class Client:
+class Cliente2:
     def __init__(self, ip, puerto):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.connect((ip, puerto))
@@ -14,7 +13,7 @@ class Client:
         self.server.sendall(mensaje.encode('utf-8'))
 
     def recibir(self):
-        mensaje = self.server.recv(buffer_size).decode('utf-8')
+        mensaje = self.server.recv(buffer).decode('utf-8')
         return mensaje
 
     def cerrar_socket(self):
@@ -47,7 +46,7 @@ def main():
     global puerto
     puerto = int(input("Introducir Puerto de conexion: "))
 
-    cliente = Client("127.0.0.1", puerto)
+    cliente = Cliente2("127.0.0.1", puerto)
 
     loop = True
     menu = 0

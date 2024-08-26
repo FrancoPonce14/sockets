@@ -60,7 +60,7 @@ public:
     }
 };
 
-int verificarUsername(string mensaje) {
+int VerificarUsername(string mensaje) {
     int resultado = 0;
     if (strcasecmp(mensaje.c_str(), "volver") == 0) {
         resultado = 2;
@@ -70,7 +70,7 @@ int verificarUsername(string mensaje) {
     return resultado;
 }
 
-int verificarPassword(string mensaje) {
+int VerificarPassword(string mensaje) {
     int resultado = 0;
     if (strcasecmp(mensaje.c_str(), "volver") == 0) {
         resultado = 2;
@@ -103,7 +103,7 @@ int main() {
                      << "\nIntroducir longitud del nombre de usuario:\n";
                 cin >> mensaje;
 
-                verificacion = verificarUsername(mensaje);
+                verificacion = VerificarUsername(mensaje);
 
                 switch (verificacion) {
                     case 1:
@@ -140,7 +140,7 @@ int main() {
                      << "\nIntroducir longitud de la contrania:\n";
                 cin >> mensaje;
 
-                verificacion = verificarPassword(mensaje);
+                verificacion = VerificarPassword(mensaje);
 
                 switch (verificacion) {
                     case 1:

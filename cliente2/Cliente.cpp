@@ -175,7 +175,7 @@ int main() {
             timeOut.join();
 
             if (mensaje.empty()) {
-                cout << "Error al recibir mensaje, cerrando la conexión." << endl;
+                cout << "Error al recibir mensaje, cerrando la conexiÃ³n." << endl;
                 conexion = false;
                 break;
             }
