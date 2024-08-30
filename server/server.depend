@@ -9,13 +9,11 @@
 	<ctime>
 	<thread>
 
-1724699422 source:c:\users\nemesis\desktop\franco desarrollo\proyectos\sockets\server\main.cpp
-	<iostream>
+1725054531 source:c:\users\nemesis\desktop\franco desarrollo\proyectos\sockets\server\main.cpp
 	<winsock2.h>
-	<math.h>
-	<iomanip>
-	<sstream>
-	<fstream>
-	<ctime>
+	<string>
 	<thread>
+	<cstdlib>
+	<ctime>
+	<cstdio>
 

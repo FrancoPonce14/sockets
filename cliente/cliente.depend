@@ -9,13 +9,10 @@
 	<ctime>
 	<stdio.h>
 
-1724697011 source:c:\users\nemesis\desktop\franco desarrollo\proyectos\sockets\cliente\main.cpp
-	<iostream>
+1725052638 source:c:\users\nemesis\desktop\franco desarrollo\proyectos\sockets\cliente\main.cpp
+	<cstdio>
 	<winsock2.h>
-	<thread>
 	<cstring>
-	<ws2tcpip.h>
 	<cstdlib>
-	<ctime>
-	<stdio.h>
+	<string>
 

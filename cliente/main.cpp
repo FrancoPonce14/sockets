@@ -1,13 +1,8 @@
-#include <iostream>
+#include <cstdio>
 #include <winsock2.h>
-#include <thread>
 #include <cstring>
-#include <ws2tcpip.h>
 #include <cstdlib>
-#include <ctime>
-#include <stdio.h>
-
-using namespace std;
+#include <string>
 
 int puerto = 0;
 
@@ -21,8 +16,7 @@ public:
     Client() {
         WSADATA wsaData;
         int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-        cout << "Conectando al servidor..." << endl << endl;
-        WSAStartup(MAKEWORD(2, 0), &WSAData);
+        printf("Conectando al servidor...\n\n");
         server = socket(AF_INET, SOCK_STREAM, 0);
         addr.sin_addr.s_addr = inet_addr("127.0.0.1");
         addr.sin_family = AF_INET;
@@ -37,18 +31,18 @@ public:
             system("pause");
             exit(EXIT_SUCCESS);
         }
-        cout << "Conectado al Servidor!" << endl;
+        printf("Conectado al Servidor!\n");
     }
 
-    void Enviar(string mensaje) {
+    void Enviar(const std::string& mensaje) {
         strcpy(buffer, mensaje.c_str());
         send(server, buffer, sizeof(buffer), 0);
         memset(buffer, 0, sizeof(buffer));
     }
 
-    string Recibir() {
+    std::string Recibir() {
         recv(server, buffer, sizeof(buffer), 0);
-        string mensaje(buffer);
+        std::string mensaje(buffer);
         memset(buffer, 0, sizeof(buffer));
         return mensaje;
     }
@@ -56,133 +50,61 @@ public:
     void CerrarSocket() {
         closesocket(server);
         WSACleanup();
-        cout << "Socket cerrado.\n";
+        printf("Socket cerrado.\n");
     }
 };
 
-int VerificarUsername(string mensaje) {
-    int resultado = 0;
-    if (strcasecmp(mensaje.c_str(), "volver") == 0) {
-        resultado = 2;
-    }else if (std::stoi(mensaje) > 15 || std::stoi(mensaje) < 5) {
-        resultado = 1;
-    }
-    return resultado;
-}
-
-int VerificarPassword(string mensaje) {
-    int resultado = 0;
-    if (strcasecmp(mensaje.c_str(), "volver") == 0) {
-        resultado = 2;
-    } else if (std::stoi(mensaje) >= 50 || std::stoi(mensaje) < 8) {
-        resultado = 1;
-    }
-    return resultado;
-}
-
 int main() {
-    cout << "Introducir Puerto de conexion\n";
-    cin >> puerto;
+    printf("Introducir Puerto de conexion\n");
+    scanf("%d", &puerto);
 
     Client* Cliente = new Client();
 
     system("pause");
 
-    boolean loop = true;
-    int menu = 0;
-    string mensaje = " ";
-    int verificacion = 0;
-    int eof = 1;
+    std::string mensaje = "";
 
-    while (loop) {
-        switch (menu) {
-            case 1:
-                system("cls");
-                cout << "\n******Generador de nombres de usuario******\n\n"
-                     << "Escribi \"volver\" para regresar al menu."
-                     << "\nIntroducir longitud del nombre de usuario:\n";
-                cin >> mensaje;
+    while (true) {
+        system("cls");
+        printf("**************MENU**************\n\n"
+               "1- Generar nombre de usuario\n2- Generar contraseña\n"
+               "3- Cerrar Sesión\n");
+        int opcion;
+        scanf("%d", &opcion);
 
-                verificacion = VerificarUsername(mensaje);
+        if (opcion == 1) {
+            printf("\nIntroducir longitud del nombre de usuario:\n");
+            char buffer[100];
+            scanf("%s", buffer);
+            mensaje = buffer;
+            Cliente->Enviar("USERNAME:" + mensaje);
+        } else if (opcion == 2) {
+            printf("\nIntroducir longitud de la contraseña:\n");
+            char buffer[100];
+            scanf("%s", buffer);
+            mensaje = buffer;
+            Cliente->Enviar("PASSWORD:" + mensaje);
+        } else if (opcion == 3) {
+            Cliente->Enviar("Cerrar Sesion");
+            Cliente->CerrarSocket();
+            break;
+        } else {
+            printf("Opción no válida. Intenta de nuevo.\n");
+            system("pause");
+            continue;
+        }
 
-                switch (verificacion) {
-                    case 1:
-                        cout << "ERROR la cantidad de caracteres"
-                             << "no esta entre los 5 y 15 permitidos\n";
-                        system("pause");
-                        break;
-
-                    case 2:
-                        menu = 0;
-                        break;
-
-                    default:
-                        Cliente->Enviar("USERNAME:" + mensaje);
-                        mensaje = Cliente->Recibir();
-                        if (!mensaje.empty()) {
-                            cout << "Respuesta:\n" << mensaje << endl << endl;
-                            system("pause");
-                        } else {
-                            cout << "\nEl mensaje no se envio,"
-                                 << "se corto la conexion por inactividad\n"
-                                 << "Se va a cerrar el programa\n\n";
-                            system("pause");
-                            exit(EXIT_SUCCESS);
-                        }
-                        break;
-                }
-                break;
-
-            case 2:
-                system("cls");
-                cout << "\n******Generador de contrasenias******\n\n"
-                     << "Escribi \"volver\" para regresar al menu."
-                     << "\nIntroducir longitud de la contrania:\n";
-                cin >> mensaje;
-
-                verificacion = VerificarPassword(mensaje);
-
-                switch (verificacion) {
-                    case 1:
-                        cout << "ERROR la cantidad de caracteres"
-                             << " no esta entre los 8 y 50 permitidos\n";
-                        system("pause");
-                        break;
-
-                    case 2:
-                        menu = 0;
-                        break;
-
-                    default:
-                        Cliente->Enviar("PASSWORD:" + mensaje);
-                        mensaje = Cliente->Recibir();
-                        if (!mensaje.empty()) {
-                            cout << "Respuesta:\n" << mensaje << endl << endl;
-                            system("pause");
-                        } else {
-                            cout << "\nEl mensaje no se envio,"
-                                 << "se corto la conexion por inactividad\n"
-                                 << "Se va a cerrar el programa\n\n";
-                            system("pause");
-                            exit(EXIT_SUCCESS);
-                        }
-                        break;
-                }
-                break;
-
-            case 3:
-                Cliente->Enviar("Cerrar Sesion");
-                Cliente->CerrarSocket();
-                loop = false;
-                break;
-
-            default:
-                system("cls");
-                cout << "**************MENU**************\n\n Elegir funcion\n"
-                     << " 1- Generar nombre de usuario\n 2- Generar contrasenia\n"
-                     << " 3- Cerrar Sesion\n";
-                cin >> menu;
-                break;
+        std::string respuesta = Cliente->Recibir();
+        if (!respuesta.empty()) {
+            printf("Respuesta:\n%s\n\n", respuesta.c_str());
+            system("pause");
+        } else {
+            printf("El mensaje no se envió, se cortó la conexión por inactividad.\n");
+            Cliente->CerrarSocket();
+            break;
         }
     }
+
+    delete Cliente;
+    return 0;
 }

@@ -1,7 +1,7 @@
 import socket
 
-puerto = 0
 buffer = 1024
+puerto = 0
 
 class Cliente2:
     def __init__(self, ip, puerto):
@@ -20,91 +20,54 @@ class Cliente2:
         self.server.close()
         print("Socket cerrado.")
 
-def verificar_username(mensaje):
-    if mensaje.lower() == "volver":
-        return 2
-    try:
-        longitud = int(mensaje)
-        if longitud > 15 or longitud < 5:
-            return 1
-    except ValueError:
-        pass
-    return 0
-
-def verificar_password(mensaje):
-    if mensaje.lower() == "volver":
-        return 2
-    try:
-        longitud = int(mensaje)
-        if longitud >= 50 or longitud < 8:
-            return 1
-    except ValueError:
-        pass
-    return 0
-
 def main():
     global puerto
     puerto = int(input("Introducir Puerto de conexion: "))
 
     cliente = Cliente2("127.0.0.1", puerto)
 
-    loop = True
-    menu = 0
+    while True:
+        print("**************MENU**************")
+        print("Elegir función:")
+        print("1- Generar nombre de usuario")
+        print("2- Generar contraseña")
+        print("3- Cerrar Sesión")
+        
+        try:
+            opcion = int(input())
+        except ValueError:
+            print("Opción no válida. Intenta de nuevo.")
+            continue
 
-    while loop:
-        if menu == 1:
+        if opcion == 1:
             print("\n******Generador de nombres de usuario******\n")
-            print("Escribi \"volver\" para regresar al menu.")
+            print("Escribe 'volver' para regresar al menú.")
             mensaje = input("Introducir longitud del nombre de usuario:\n")
+            cliente.enviar("USERNAME:" + mensaje)
 
-            verificacion = verificar_username(mensaje)
-
-            if verificacion == 1:
-                print("ERROR la cantidad de caracteres no está entre los 5 y 15 permitidos")
-            elif verificacion == 2:
-                menu = 0
-            else:
-                cliente.enviar("USERNAME:" + mensaje)
-                respuesta = cliente.recibir()
-                if respuesta:
-                    print("Respuesta:", respuesta)
-                else:
-                    print("\nEl mensaje no se envió, se cortó la conexión por inactividad.")
-                    print("Se va a cerrar el programa.")
-                    cliente.cerrar_socket()
-                    return
-        elif menu == 2:
+        elif opcion == 2:
             print("\n******Generador de contraseñas******\n")
-            print("Escribi \"volver\" para regresar al menu.")
+            print("Escribe 'volver' para regresar al menú.")
             mensaje = input("Introducir longitud de la contraseña:\n")
+            cliente.enviar("PASSWORD:" + mensaje)
 
-            verificacion = verificar_password(mensaje)
-
-            if verificacion == 1:
-                print("ERROR la cantidad de caracteres no está entre los 8 y 50 permitidos")
-            elif verificacion == 2:
-                menu = 0
-            else:
-                cliente.enviar("PASSWORD:" + mensaje)
-                respuesta = cliente.recibir()
-                if respuesta:
-                    print("Respuesta:", respuesta)
-                else:
-                    print("\nEl mensaje no se envió, se cortó la conexión por inactividad.")
-                    print("Se va a cerrar el programa.")
-                    cliente.cerrar_socket()
-                    return
-        elif menu == 3:
+        elif opcion == 3:
             cliente.enviar("Cerrar Sesion")
             cliente.cerrar_socket()
-            loop = False
+            break
+
         else:
-            print("**************MENU**************")
-            print("Elegir función:")
-            print("1- Generar nombre de usuario")
-            print("2- Generar contraseña")
-            print("3- Cerrar Sesión")
-            menu = int(input())
+            print("Opción no válida. Intenta de nuevo.")
+            continue
+
+        respuesta = cliente.recibir()
+        if respuesta:
+            print("Respuesta:", respuesta)
+        else:
+            print("\nEl mensaje no se envió, se cortó la conexión por inactividad.")
+            print("Se va a cerrar el programa.")
+            cliente.cerrar_socket()
+            break
 
 if __name__ == "__main__":
     main()

@@ -1,19 +1,15 @@
-#include <iostream>
 #include <winsock2.h>
-#include <math.h>
-#include <iomanip>
-#include <sstream>
-#include <fstream>
-#include <ctime>
+#include <string>
 #include <thread>
-
-using namespace std;
+#include <cstdlib>
+#include <ctime>
+#include <cstdio>
 
 #define PUERTO 5000
 
-string vocales = "AEIOUaeiou";
-string consonantes = "BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz";
-string numeros = "0123456789";
+std::string vocales = "AEIOUaeiou";
+std::string consonantes = "BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz";
+std::string numeros = "0123456789";
 bool esperando = false;
 bool conexion = true;
 
@@ -25,7 +21,7 @@ public:
     char buffer[1024];
 
     Server() {
-        WSAStartup(MAKEWORD(2, 0), &WSAData);
+        WSAStartup(MAKEWORD(2, 2), &WSAData);
         server = socket(AF_INET, SOCK_STREAM, 0);
 
         serverAddr.sin_addr.s_addr = INADDR_ANY;
@@ -35,36 +31,36 @@ public:
         bind(server, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
         listen(server, 0);
 
-        cout << "Escuchando para conexiones entrantes en el puerto: " << PUERTO << endl;
+        printf("Escuchando para conexiones entrantes en el puerto: %d\n", PUERTO);
     }
 
     bool AceptarCliente() {
         int clientAddrSize = sizeof(clientAddr);
         client = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize);
         if (client != INVALID_SOCKET) {
-            cout << "Cliente conectado!" << endl;
+            printf("Cliente conectado!\n");
             return true;
         }
         return false;
     }
 
     void EsperarCliente() {
-        cout << "Esperando cliente..." << endl;
+        printf("Esperando cliente...\n");
         int clientAddrSize = sizeof(clientAddr);
         client = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize);
         if (client != INVALID_SOCKET) {
-            cout << "Cliente conectado!" << endl;
+            printf("Cliente conectado!\n");
         }
     }
 
-    string Recibir() {
+    std::string Recibir() {
         recv(client, buffer, sizeof(buffer), 0);
-        string mensaje(buffer);
+        std::string mensaje(buffer);
         memset(buffer, 0, sizeof(buffer));
         return mensaje;
     }
 
-    void Enviar(const string& mensaje) {
+    void Enviar(const std::string& mensaje) {
         strcpy(buffer, mensaje.c_str());
         send(client, buffer, sizeof(buffer), 0);
         memset(buffer, 0, sizeof(buffer));
@@ -72,13 +68,13 @@ public:
 
     void CerrarSocketCliente() {
         closesocket(client);
-        cout << "Socket cerrado, cliente desconectado.\n" << endl;
+        printf("Socket cerrado, cliente desconectado.\n");
     }
 
     void CerrarSocketServidor() {
         closesocket(server);
         WSACleanup();
-        cout << "Servidor cerrado.\n" << endl;
+        printf("Servidor cerrado.\n");
     }
 };
 
@@ -87,8 +83,8 @@ void TimeOut(Server* servidor) {
     while (esperando) {
         Sleep(1000);
         tiempo++;
-        if (tiempo >= 120) {
-            cout << "\nTimeout, se va a cerrar la conexion con el cliente\n";
+        if (tiempo >= 12000) {
+            printf("\nTimeout, se va a cerrar la conexión con el cliente\n");
             servidor->CerrarSocketCliente();
             conexion = false;
             break;
@@ -97,18 +93,18 @@ void TimeOut(Server* servidor) {
 }
 
 char LetraInicialAleatoria() {
-    string todo = vocales + consonantes;
+    std::string todo = vocales + consonantes;
     srand(static_cast<unsigned>(time(0)));
     int i = rand() % todo.length();
     return todo[i];
 }
 
-string GenerarUsername(int longitud) {
-    string resultado = "";
+std::string GenerarUsername(int longitud) {
+    std::string resultado = "";
     char letraInicial = LetraInicialAleatoria();
     resultado = letraInicial;
 
-    if (vocales.find(letraInicial) != string::npos) {
+    if (vocales.find(letraInicial) != std::string::npos) {
         for (int i = 1; i < longitud; i++) {
             if (i % 2 == 1) {
                 int consonanteAleatoria = rand() % consonantes.length();
@@ -118,7 +114,7 @@ string GenerarUsername(int longitud) {
                 resultado += vocales[vocalAleatoria];
             }
         }
-    } else if (consonantes.find(letraInicial) != string::npos) {
+    } else if (consonantes.find(letraInicial) != std::string::npos) {
         for (int i = 1; i < longitud; i++) {
             if (i % 2 == 1) {
                 int vocalAleatoria = rand() % vocales.length();
@@ -133,9 +129,9 @@ string GenerarUsername(int longitud) {
     return resultado;
 }
 
-string GenerarPassword(int longitud) {
-    string alfanumericos = numeros + consonantes + vocales;
-    string resultado = "";
+std::string GenerarPassword(int longitud) {
+    std::string alfanumericos = numeros + consonantes + vocales;
+    std::string resultado = "";
     for(int i = 0; i < longitud; i++){
         int alfanumericoAleatorio = rand() % alfanumericos.length();
         resultado += alfanumericos[alfanumericoAleatorio];
@@ -143,48 +139,63 @@ string GenerarPassword(int longitud) {
     return resultado;
 }
 
-string ResponderCadena(const string& mensaje) {
-    string resultado = "";
-    if(mensaje.find("USERNAME:") == 0){
-        int longitud = stoi(mensaje.substr(9));
-        resultado = GenerarUsername(longitud);
-    } else if(mensaje.find("PASSWORD:") == 0) {
-        int longitud = stoi(mensaje.substr(9));
-        resultado = GenerarPassword(longitud);
-    } else {
+std::string ResponderCadena(const std::string& mensaje) {
+    std::string resultado = "";
+
+    if (mensaje == "volver") {
+        resultado = "Volviendo al menú...";
+    } else if (mensaje.find("USERNAME:") == 0) {
+        int longitud = std::stoi(mensaje.substr(9));
+        if (longitud < 5 || longitud > 15) {
+            resultado = "ERROR: La longitud del nombre de usuario debe estar entre 5 y 15 caracteres.";
+        } else {
+            resultado = GenerarUsername(longitud);
+        }
+    } else if (mensaje.find("PASSWORD:") == 0) {
+        int longitud = std::stoi(mensaje.substr(9));
+        if (longitud < 8 || longitud > 50) {
+            resultado = "ERROR: La longitud de la contraseña debe estar entre 8 y 50 caracteres.";
+        } else {
+            resultado = GenerarPassword(longitud);
+        }
+    } else if (mensaje == "Cerrar Sesion") {
         resultado = "Conexion cerrada";
         conexion = false;
+    } else {
+        resultado = "Comando no reconocido";
     }
 
     return resultado;
 }
 
 int main() {
+
     Server* Servidor = new Server();
+
 
     while (true) {
         Servidor->EsperarCliente();
 
         while (conexion) {
-            cout << ": Esperando recibir mensaje" << endl;
+            printf(": Esperando recibir mensaje\n");
 
-            thread timeOut(TimeOut, Servidor);
+            std::thread timeOut(TimeOut, Servidor);
             esperando = true;
-            string mensaje = Servidor->Recibir();
+            std::string mensaje = Servidor->Recibir();
             esperando = false;
             timeOut.join();
 
             if (mensaje.empty()) {
-                cout << "Error al recibir mensaje, cerrando la conexión." << endl;
+                printf("Error al recibir mensaje, cerrando la conexión.\n");
                 conexion = false;
                 break;
             }
 
-            cout << ": Mensaje recibido: " << mensaje << endl;
+            printf(": Mensaje recibido: %s\n", mensaje.c_str());
 
-            string respuesta = ResponderCadena(mensaje);
+            std::string respuesta = ResponderCadena(mensaje);
 
-            cout << ": Respuesta enviada: " << respuesta << endl;
+            printf(": Respuesta enviada: %s\n", respuesta.c_str());
 
             Servidor->Enviar(respuesta);
 
@@ -200,3 +211,4 @@ int main() {
 
     return 0;
 }
+
